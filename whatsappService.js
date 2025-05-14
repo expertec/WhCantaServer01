@@ -41,8 +41,8 @@ export async function sendMessageToLead(phone, messageContent) {
   if (!sock) throw new Error('No hay conexión activa con WhatsApp');
 
   // Normalizar E.164 sin '+'
-    const num = normalizePhone(phone);
- const jid = `${num}@s.whatsapp.net`;
+  const num = normalizePhone(phone);
+  const jid = `${num}@c.us`;
 
   // Enviar mensaje
   await sock.sendMessage(jid, { text: messageContent });
@@ -74,7 +74,7 @@ export async function sendAudioMessage(phone, filePath) {
 
   let num = String(phone).replace(/\D/g, '');
   if (num.length === 10) num = '52' + num;
-  const jid = `${num}@s.whatsapp.net`;
+  const jid = `${num}@c.us`;
 
   // 1) Leer y enviar por Baileys como audio/mp4
   const audioBuffer = fs.readFileSync(filePath);
