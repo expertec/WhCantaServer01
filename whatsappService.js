@@ -3,15 +3,46 @@ import fs from 'fs';
 import { db, bucket } from './firebaseAdmin.js';
 import { getWhatsAppSock } from './whatsappServer.js';
 
+
+/**
+ * Normaliza un número a E.164 (México +52) sin '+'
+ */
+function normalizePhone(phone) {
+    let num = String(phone).replace(/\D+/g, "");    // solo dígitos
+  
+    // Elimina ceros al inicio
+    while (num.startsWith("0")) {
+      num = num.slice(1);
+    }
+  
+    // 10 dígitos => local MX
+    if (num.length === 10) {
+      num = "52" + num;
+    }
+    // 11 dígitos que empiezan con '1' (p.ej. 1+10 dígitos)
+    else if (num.length === 11 && num.startsWith("1")) {
+      num = "52" + num.slice(1);
+    }
+    // 12 dígitos que ya empiezan con '52' => correcto
+    else if (num.length === 12 && num.startsWith("52")) {
+      // no hacer nada
+    }
+    else {
+      throw new Error(`Formato de teléfono inválido: ${phone}`);
+    }
+  
+    return num;
+  }
+  
+
 // sendMessageToLead original, ajustado para usar getWhatsAppSock()
 export async function sendMessageToLead(phone, messageContent) {
   const sock = await getWhatsAppSock();
   if (!sock) throw new Error('No hay conexión activa con WhatsApp');
 
   // Normalizar E.164 sin '+'
-  let num = String(phone).replace(/\D/g, '');
-  if (num.length === 10) num = '52' + num;
-  const jid = `${num}@s.whatsapp.net`;
+    const num = normalizePhone(phone);
+ const jid = `${num}@s.whatsapp.net`;
 
   // Enviar mensaje
   await sock.sendMessage(jid, { text: messageContent });
