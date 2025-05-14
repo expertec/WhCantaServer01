@@ -17,12 +17,15 @@ app.use(express.json());
 // 1) Arranca WhatsApp y registra/heartbeat en Firestore
 connectToWhatsApp().then(async () => {
   const ref = db.collection('whatsappServers').doc(SESSION_ID);
-  await ref.set({
-    sessionId: SESSION_ID,
-    baseUrl: BASE_URL,
-    status: getConnectionStatus(),
-    lastSeen: adminSdk.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+   // Registro inicial del hijo en Firestore, con estado de trabajo
+ await ref.set({
+   sessionId:          SESSION_ID,
+   baseUrl:            BASE_URL,
+   status:             getConnectionStatus(),
+   workState:          "resting",                                    // <-- nuevo
+   lastWorkSwitchedAt: adminSdk.firestore.FieldValue.serverTimestamp(), // <-- nuevo
+   lastSeen:           adminSdk.firestore.FieldValue.serverTimestamp()
+ }, { merge: true });
 
   setInterval(() => {
     ref.update({
